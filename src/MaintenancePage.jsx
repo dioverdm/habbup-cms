@@ -8,27 +8,32 @@ const LOGO_TEXT = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBA
 
 const FEATURES = [
   {
-    icon: "⚡",
+    icon: "https://i.ibb.co/KzzLpnB6/xp.png",
+    size: "30px",
     title: "Sistemas & Gameplay de Nueva Generación",
     desc: "Creemos que mereces la <strong>mejor experiencia</strong>. Estamos introduciendo sistemas de última generación e infraestructura de <strong>gameplay más fluido</strong>.",
   },
   {
-    icon: "💰",
+    icon: "https://i.ibb.co/Cs4bH2ky/110c-110d.png",
+    size: "25px",
     title: "Economía Justa y Equilibrada",
     desc: "Hemos diseñado un sistema que <strong>previene brechas injustas</strong> entre jugadores, dando a todos una oportunidad real de progresar.",
   },
   {
-    icon: "🎲",
+    icon: "https://i.ibb.co/XrLXtqGH/Controller.png",
+    size: "30px",
     title: "Eventos Programados y Divertidos",
     desc: "Un <strong>calendario de eventos estricto</strong> garantizará entretenimiento regular y <strong>premios únicos</strong> para todos los participantes.",
   },
   {
-    icon: "👥",
+    icon: "https://i.ibb.co/QFk24z9Z/users.png",
+    size: "30px",
     title: "Staff Profesional y Accesible",
     desc: "Garantizamos miembros de staff <strong>con experiencia</strong> dedicados a <strong>resolver tus problemas</strong> y mantener un ambiente amigable.",
   },
   {
-    icon: "✨",
+    icon: "https://i.ibb.co/Gfpxh5kD/heart.png",
+    size: "auto",
     title: "¡Y Mucho Más...",
     desc: "Innumerables nuevas funciones te esperan. ¡Síguenos en <strong>X</strong> y únete a nuestro <strong>Discord</strong> para estar al tanto!",
   },
@@ -90,7 +95,7 @@ export default function MaintenancePage() {
             {/* LOGO */}
             <div className="mp-logo">
               <img src={LOGO_ICON} alt="HabbUP Icon" className="mp-logo-icon" />
-             {/* <img src={LOGO_TEXT} alt="HabbUP" className="mp-logo-text" /> */}
+              {/* <img src={LOGO_TEXT} alt="HabbUP" className="mp-logo-text" /> */}
             </div>
 
             {/* HEADING */}
@@ -103,7 +108,7 @@ export default function MaintenancePage() {
             <div className="mp-grid">
               {FEATURES.map((f, i) => (
                 <div key={i} className="mp-card" style={{ animationDelay: `${0.05 + i * 0.07}s` }}>
-                  <div className="mp-card-icon">{f.icon}</div>
+                  <div className="mp-card-icon"><img src={f.icon} style={{width: `${f.size}`}} alt="Features Icons" /></div>
                   <div>
                     <h3>{f.title}</h3>
                     <p dangerouslySetInnerHTML={{ __html: f.desc }} />
