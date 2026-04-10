@@ -1,46 +1,17 @@
-import express from 'express'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { randomUUID } from 'crypto'
+import express             from 'express'
+import { readChangelog, writeChangelog } from '../lib/data.js'
+import { createToken, verifyToken, ADMIN_USER, ADMIN_PASS } from '../lib/auth.js'
+import { randomUUID }      from 'crypto'
+import path                from 'path'
+import { fileURLToPath }   from 'url'
+import fs                  from 'fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const app = express()
-const PORT = process.env.PORT || 3001
-const DATA_FILE = path.join(__dirname, 'data', 'changelog.json')
-const DIST_DIR = path.join(__dirname, '..', 'dist')
+const app       = express()
+const PORT      = process.env.PORT || 3001
+const DIST      = path.join(__dirname, '..', 'dist')
 
-// ─── Credentials ────────────────────────────────────────────────────────────
-const ADMIN_USER = process.env.ADMIN_USER || 'Kryon'
-const ADMIN_PASS = process.env.ADMIN_PASS || '33476373'
-const SESSION_TOKEN = 'habbup_admin_token'
-let activeTokens = new Set()
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-const readChangelog = () => {
-  try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'))
-  } catch {
-    return []
-  }
-}
-
-const writeChangelog = (data) => {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8')
-}
-
-const authMiddleware = (req, res, next) => {
-  const token = req.headers['x-admin-token']
-  if (!token || !activeTokens.has(token)) {
-    return res.status(401).json({ error: 'No autorizado' })
-  }
-  next()
-}
-
-// ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json())
-
-// CORS in dev
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
@@ -49,38 +20,31 @@ app.use((req, res, next) => {
   next()
 })
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+const auth = (req, res, next) => {
+  if (!verifyToken(req.headers['x-admin-token'] || '')) return res.status(401).json({ error: 'No autorizado' })
+  next()
+}
+
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = randomUUID()
-    activeTokens.add(token)
-    return res.json({ token })
-  }
+  if (username === ADMIN_USER && password === ADMIN_PASS) return res.json({ token: createToken() })
   res.status(401).json({ error: 'Credenciales incorrectas' })
 })
 
-app.post('/api/auth/logout', authMiddleware, (req, res) => {
-  activeTokens.delete(req.headers['x-admin-token'])
-  res.json({ ok: true })
+app.post('/api/auth/logout', (req, res) => res.json({ ok: true }))
+
+app.get('/api/auth/verify', (req, res) => {
+  verifyToken(req.headers['x-admin-token'] || '') ? res.json({ ok: true }) : res.status(401).json({ error: 'Token inválido' })
 })
 
-app.get('/api/auth/verify', authMiddleware, (req, res) => {
-  res.json({ ok: true })
-})
-
-// ─── Changelog (public) ───────────────────────────────────────────────────────
 app.get('/api/changelog', (req, res) => {
   const data = readChangelog()
   res.json(data.sort((a, b) => new Date(b.date) - new Date(a.date)))
 })
 
-// ─── Changelog (admin) ───────────────────────────────────────────────────────
-app.post('/api/changelog', authMiddleware, (req, res) => {
+app.post('/api/changelog', auth, (req, res) => {
   const { version, date, type, title, description } = req.body
-  if (!version || !date || !type || !title || !description) {
-    return res.status(400).json({ error: 'Todos los campos son requeridos' })
-  }
+  if (!version || !date || !type || !title || !description) return res.status(400).json({ error: 'Todos los campos son requeridos' })
   const data = readChangelog()
   const entry = { id: randomUUID(), version, date, type, title, description, author: ADMIN_USER }
   data.push(entry)
@@ -88,7 +52,7 @@ app.post('/api/changelog', authMiddleware, (req, res) => {
   res.status(201).json(entry)
 })
 
-app.put('/api/changelog/:id', authMiddleware, (req, res) => {
+app.put('/api/changelog/:id', auth, (req, res) => {
   const data = readChangelog()
   const idx = data.findIndex(e => e.id === req.params.id)
   if (idx === -1) return res.status(404).json({ error: 'No encontrado' })
@@ -97,7 +61,7 @@ app.put('/api/changelog/:id', authMiddleware, (req, res) => {
   res.json(data[idx])
 })
 
-app.delete('/api/changelog/:id', authMiddleware, (req, res) => {
+app.delete('/api/changelog/:id', auth, (req, res) => {
   const data = readChangelog()
   const idx = data.findIndex(e => e.id === req.params.id)
   if (idx === -1) return res.status(404).json({ error: 'No encontrado' })
@@ -106,18 +70,14 @@ app.delete('/api/changelog/:id', authMiddleware, (req, res) => {
   res.json({ ok: true })
 })
 
-// ─── Serve dist in production ─────────────────────────────────────────────────
-if (fs.existsSync(DIST_DIR)) {
-  app.use(express.static(DIST_DIR))
+if (fs.existsSync(DIST)) {
+  app.use(express.static(DIST))
   app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(DIST_DIR, 'index.html'))
-    }
+    if (!req.path.startsWith('/api')) res.sendFile(path.join(DIST, 'index.html'))
   })
 }
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 HabbUP Server corriendo en http://localhost:${PORT}`)
-  console.log(`   API: http://localhost:${PORT}/api/changelog`)
-  console.log(`   Admin: http://localhost:${PORT}/admin\n`)
+  console.log(`\n🚀 HabbUP API en http://localhost:${PORT}\n`)
 })
+
