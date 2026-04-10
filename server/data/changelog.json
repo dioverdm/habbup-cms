@@ -1,0 +1,11 @@
+[
+  {
+    "id": "91d4bb24-2a1e-4c72-b9a8-9a3d0ec152b4",
+    "version": "v1.0.0-Beta",
+    "date": "2026-04-10",
+    "type": "nuevo",
+    "title": "Inicio del desarrollo de CMS propio",
+    "description": "Hemos comenzado el desarrollo de nuestro propio sistema de gestión de contenidos (CMS) diseñado completamente a medida para HabbUP. Este nuevo CMS nos permitirá ofrecer una experiencia más rápida, segura y personalizada, adaptada 100% a las necesidades de nuestra comunidad. Durante las próximas semanas, trabajaremos en sus funcionalidades base, integración con el emulador y una interfaz moderna y ligera. ¡Mantente atento a futuros avances!",
+    "author": "Kryon"
+  }
+]
