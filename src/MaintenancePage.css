@@ -319,7 +319,7 @@
 .mp-socials { display: flex; gap: 12px; }
 
 .mp-btn-discord,
-.mp-btn-x {
+.mp-btn-x, .mp-btn-f {
   display: flex;
   align-items: center;
   gap: 11px;
@@ -341,18 +341,23 @@
   background: linear-gradient(135deg, #18181b, #27272a);
   border: 1px solid #3f3f46;
 }
+.mp-btn-f {
+  background: linear-gradient(135deg, #1877f2, #0c63d4);
+  border: 1px solid #3f3f46;
+}
 .mp-btn-discord:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(88,101,242,0.5); }
 .mp-btn-x:hover { transform: translateY(-2px); filter: brightness(1.15); }
+.mp-btn-f:hover { transform: translateY(-2px); filter: brightness(1.15); }
 
 .mp-btn-discord span,
-.mp-btn-x span {
+.mp-btn-x span, .mp-btn-f span {
   display: flex;
   flex-direction: column;
   line-height: 1;
   gap: 3px;
 }
 .mp-btn-discord small,
-.mp-btn-x small {
+.mp-btn-x small, .mp-btn-f small {
   font-size: 10px;
   opacity: 0.7;
   font-weight: 600;
